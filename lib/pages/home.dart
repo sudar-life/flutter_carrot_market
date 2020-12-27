@@ -148,6 +148,7 @@ class _HomeState extends State<Home> {
                   ),
                   Expanded(
                     child: Container(
+                      height: 100,
                       padding: const EdgeInsets.only(left: 20, top: 2),
                       alignment: Alignment.centerLeft,
                       child: Column(
@@ -171,7 +172,27 @@ class _HomeState extends State<Home> {
                                 fontSize: 14,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w500),
-                          )
+                          ),
+                          Expanded(
+                            child: Container(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    height: 18,
+                                    child: SvgPicture.asset(
+                                      "assets/svg/heart_off.svg",
+                                      width: 13,
+                                      height: 13,
+                                    ),
+                                  ),
+                                  SizedBox(width: 3),
+                                  Text(data["likes"]),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
