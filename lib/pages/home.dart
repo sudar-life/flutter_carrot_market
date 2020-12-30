@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_carrot_market/repository/contents_repository.dart';
 import 'package:flutter_carrot_market/utils/data_utils.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);
@@ -10,85 +11,20 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Map<String, String>> datas = [];
-  int _currentPageIndex = 0;
+  final ContentsRepository contentsRepository = ContentsRepository();
+  String currentLocation;
+  final Map<String, String> locationTypeToString = {
+    "ara": "아라동",
+    "ora": "오라동",
+    "donam": "도남동",
+  };
+  bool isLoading;
 
   @override
   void initState() {
     super.initState();
-    _currentPageIndex = 0;
-    datas = [
-      {
-        "image": "assets/images/1.jpg",
-        "title": "네메시스 축구화275",
-        "location": "제주 제주시 아라동",
-        "price": "30000",
-        "likes": "2"
-      },
-      {
-        "image": "assets/images/2.jpg",
-        "title": "LA갈비 5kg팔아요~",
-        "location": "제주 제주시 아라동",
-        "price": "100000",
-        "likes": "5"
-      },
-      {
-        "image": "assets/images/3.jpg",
-        "title": "치약팝니다",
-        "location": "제주 제주시 아라동",
-        "price": "5000",
-        "likes": "0"
-      },
-      {
-        "image": "assets/images/4.jpg",
-        "title": "[풀박스]맥북프로16인치 터치바 스페이스그레이",
-        "location": "제주 제주시 아라동",
-        "price": "2500000",
-        "likes": "6"
-      },
-      {
-        "image": "assets/images/5.jpg",
-        "title": "디월트존기임팩",
-        "location": "제주 제주시 아라동",
-        "price": "150000",
-        "likes": "2"
-      },
-      {
-        "image": "assets/images/6.jpg",
-        "title": "갤럭시s10",
-        "location": "제주 제주시 아라동",
-        "price": "180000",
-        "likes": "2"
-      },
-      {
-        "image": "assets/images/7.jpg",
-        "title": "선반",
-        "location": "제주 제주시 아라동",
-        "price": "15000",
-        "likes": "2"
-      },
-      {
-        "image": "assets/images/8.jpg",
-        "title": "냉장 쇼케이스",
-        "location": "제주 제주시 아라동",
-        "price": "80000",
-        "likes": "3"
-      },
-      {
-        "image": "assets/images/9.jpg",
-        "title": "대우 미니냉장고",
-        "location": "제주 제주시 아라동",
-        "price": "30000",
-        "likes": "3"
-      },
-      {
-        "image": "assets/images/10.jpg",
-        "title": "멜킨스 풀업 턱걸이 판매합니다.",
-        "location": "제주 제주시 아라동",
-        "price": "50000",
-        "likes": "7"
-      },
-    ];
+    currentLocation = "ara";
+    isLoading = false;
   }
 
   /*
@@ -108,21 +44,23 @@ class _HomeState extends State<Home> {
               1),
           child: Row(
             children: [
-              Text("아라동"),
+              Text(locationTypeToString[currentLocation]),
               Icon(Icons.arrow_drop_down),
             ],
           ),
           onSelected: (String value) {
-            print(value);
+            setState(() {
+              currentLocation = value;
+            });
           },
           itemBuilder: (BuildContext context) {
             return [
               PopupMenuItem(
-                value: "test",
+                value: "ara",
                 child: Text("아라동"),
               ),
               PopupMenuItem(
-                value: "test",
+                value: "ora",
                 child: Text("오라동"),
               )
             ];
@@ -144,10 +82,14 @@ class _HomeState extends State<Home> {
     );
   }
 
-  /*
-   * body UI 
-   */
-  Widget _bodyWidget() {
+  Future<List<Map<String, String>>> _loadContents() async {
+    List<Map<String, String>> responseData =
+        await contentsRepository.loadContentsFromLocation(currentLocation);
+    return responseData;
+  }
+
+  Widget _makeDataList(List<Map<String, String>> datas) {
+    int size = datas == null ? 0 : datas.length;
     return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 15),
       physics: ClampingScrollPhysics(), // bounce 효과를 제거 할 수 있다.
@@ -225,7 +167,7 @@ class _HomeState extends State<Home> {
           return Center(child: CircularProgressIndicator());
         }
       },
-      itemCount: this.datas.length,
+      itemCount: size,
       separatorBuilder: (BuildContext context, int index) {
         return Container(
           height: 1,
@@ -236,58 +178,31 @@ class _HomeState extends State<Home> {
   }
 
   /*
-   * bottomNavigation UI 
+   * body UI 
    */
-  Widget _bottomNavigationWidget() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: _currentPageIndex,
-      onTap: (index) {
-        setState(() {
-          _currentPageIndex = index;
-        });
+  Widget _bodyWidget() {
+    return FutureBuilder(
+      future: _loadContents(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text("데이터 오류"));
+        }
+        if (snapshot.hasData) {
+          return _makeDataList(snapshot.data);
+        }
+        return Center(child: Text("해당 지역에 데이터가 없습니다."));
       },
-      selectedItemColor: Colors.black,
-      items: <BottomNavigationBarItem>[
-        _bottomNavigationBarItem("home", "홈"),
-        _bottomNavigationBarItem("notes", "동네생활"),
-        _bottomNavigationBarItem("location", "내 근처"),
-        _bottomNavigationBarItem("chat", "채팅"),
-        _bottomNavigationBarItem("user", "나의 당근"),
-      ],
     );
   }
 
-  BottomNavigationBarItem _bottomNavigationBarItem(
-      String iconName, String name) {
-    return BottomNavigationBarItem(
-      icon: SvgPicture.asset(
-        "assets/svg/${iconName}_off.svg",
-        width: 22,
-      ),
-      activeIcon: SvgPicture.asset(
-        "assets/svg/${iconName}_on.svg",
-        width: 22,
-      ),
-      title: Padding(
-        padding: const EdgeInsets.only(top: 4.0),
-        child: Text(
-          name,
-          style: TextStyle(fontSize: 12),
-        ),
-      ),
-    );
-  }
-
-  /*
-   * Home 위젯 구성 
-   */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _appbarWidget(),
       body: _bodyWidget(),
-      bottomNavigationBar: _bottomNavigationWidget(),
     );
   }
 }
