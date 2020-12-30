@@ -100,11 +100,33 @@ class _HomeState extends State<Home> {
         onTap: () {
           print("click event");
         },
-        child: Row(
-          children: [
-            Text("아라동"),
-            Icon(Icons.arrow_drop_down),
-          ],
+        child: PopupMenuButton<String>(
+          offset: Offset(0, 20),
+          shape: ShapeBorder.lerp(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+              1),
+          child: Row(
+            children: [
+              Text("아라동"),
+              Icon(Icons.arrow_drop_down),
+            ],
+          ),
+          onSelected: (String value) {
+            print(value);
+          },
+          itemBuilder: (BuildContext context) {
+            return [
+              PopupMenuItem(
+                value: "test",
+                child: Text("아라동"),
+              ),
+              PopupMenuItem(
+                value: "test",
+                child: Text("오라동"),
+              )
+            ];
+          },
         ),
       ),
       elevation: 1, // 그림자를 표현되는 높이 3d 측면의 높이를 뜻함.
