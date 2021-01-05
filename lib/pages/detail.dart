@@ -1,11 +1,12 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_carrot_market/components/manor_temperature_widget.dart';
+import 'package:flutter_carrot_market/repository/contents_repository.dart';
 import 'package:flutter_carrot_market/utils/data_utils.dart';
 import 'package:flutter_svg/svg.dart';
 
 class DetailContentView extends StatefulWidget {
-  Map<String, String> data;
+  Map<String, dynamic> data;
   DetailContentView({Key key, this.data}) : super(key: key);
 
   @override
@@ -13,7 +14,9 @@ class DetailContentView extends StatefulWidget {
 }
 
 class _DetailContentViewState extends State<DetailContentView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  final ContentsRepository contentsRepository = ContentsRepository();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   Size size;
 
   List<String> imgList;
@@ -22,6 +25,7 @@ class _DetailContentViewState extends State<DetailContentView>
   double locationAlpha = 0;
   AnimationController _animationController;
   Animation _colorTween;
+  bool isMyFavoriteContent = false;
 
   @override
   void initState() {
@@ -37,6 +41,7 @@ class _DetailContentViewState extends State<DetailContentView>
       widget.data["image"],
     ];
     _current = 0;
+    _loadMyFavoriteContentState();
     controller.addListener(() {
       setState(() {
         if (controller.offset > 255)
@@ -46,6 +51,13 @@ class _DetailContentViewState extends State<DetailContentView>
 
         _animationController.value = locationAlpha / 255;
       });
+    });
+  }
+
+  _loadMyFavoriteContentState() async {
+    bool ck = await contentsRepository.isMyFavoriteContents(widget.data["cid"]);
+    setState(() {
+      isMyFavoriteContent = ck;
     });
   }
 
@@ -308,13 +320,29 @@ class _DetailContentViewState extends State<DetailContentView>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () {
-              print("asdf");
+            onTap: () async {
+              if (isMyFavoriteContent) {
+                await contentsRepository
+                    .deleteMyFavoriteContent(widget.data["cid"]);
+              } else {
+                await contentsRepository.addMyFavoriteContent(widget.data);
+              }
+              setState(() {
+                isMyFavoriteContent = !isMyFavoriteContent;
+              });
+              scaffoldKey.currentState.showSnackBar(SnackBar(
+                duration: Duration(milliseconds: 1000),
+                content: Text(
+                    isMyFavoriteContent ? "관심목록에 추가됐어요." : "관심목록에서 제거됐어요."),
+              ));
             },
             child: SvgPicture.asset(
-              "assets/svg/heart_off.svg",
+              isMyFavoriteContent
+                  ? "assets/svg/heart_on.svg"
+                  : "assets/svg/heart_off.svg",
               width: 20,
               height: 20,
+              color: Color(0xfff08f4f),
             ),
           ),
           Container(
@@ -370,6 +398,7 @@ class _DetailContentViewState extends State<DetailContentView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: scaffoldKey,
         extendBodyBehindAppBar: true,
         appBar: _appbarWidget(),
         body: _bodyWidget(),
