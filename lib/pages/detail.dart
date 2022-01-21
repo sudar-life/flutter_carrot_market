@@ -6,8 +6,8 @@ import 'package:flutter_carrot_market/utils/data_utils.dart';
 import 'package:flutter_svg/svg.dart';
 
 class DetailContentView extends StatefulWidget {
-  Map<String, dynamic> data;
-  DetailContentView({Key key, this.data}) : super(key: key);
+  Map<String, String> data;
+  DetailContentView({Key? key, required this.data}) : super(key: key);
 
   @override
   _DetailContentViewState createState() => _DetailContentViewState();
@@ -17,14 +17,14 @@ class _DetailContentViewState extends State<DetailContentView>
     with TickerProviderStateMixin {
   final ContentsRepository contentsRepository = ContentsRepository();
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  Size size;
+  Size? size;
 
-  List<String> imgList;
-  int _current;
+  late List<String> imgList;
+  int? _current;
   ScrollController controller = ScrollController();
   double locationAlpha = 0;
-  AnimationController _animationController;
-  Animation _colorTween;
+  late AnimationController _animationController;
+  late Animation _colorTween;
   bool isMyFavoriteContent = false;
 
   @override
@@ -34,11 +34,11 @@ class _DetailContentViewState extends State<DetailContentView>
     _colorTween = ColorTween(begin: Colors.white, end: Colors.black)
         .animate(_animationController);
     imgList = [
-      widget.data["image"],
-      widget.data["image"],
-      widget.data["image"],
-      widget.data["image"],
-      widget.data["image"],
+      widget.data["image"] as String,
+      widget.data["image"] as String,
+      widget.data["image"] as String,
+      widget.data["image"] as String,
+      widget.data["image"] as String,
     ];
     _current = 0;
     _loadMyFavoriteContentState();
@@ -55,7 +55,8 @@ class _DetailContentViewState extends State<DetailContentView>
   }
 
   _loadMyFavoriteContentState() async {
-    bool ck = await contentsRepository.isMyFavoriteContents(widget.data["cid"]);
+    bool ck = await contentsRepository
+        .isMyFavoriteContents(widget.data["cid"] as String);
     setState(() {
       isMyFavoriteContent = ck;
     });
@@ -76,7 +77,7 @@ class _DetailContentViewState extends State<DetailContentView>
   /*
   * appBar Widget 구현 
   */
-  Widget _appbarWidget() {
+  PreferredSizeWidget _appbarWidget() {
     return AppBar(
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
@@ -91,16 +92,18 @@ class _DetailContentViewState extends State<DetailContentView>
     );
   }
 
+  double get screenWidth => size == null ? 300 : size!.width * 0.8;
+
   Widget _makeSliderImage() {
     return Container(
-      height: size.width * 0.8,
+      height: screenWidth,
       child: Stack(
         children: [
           Hero(
-            tag: widget.data["cid"],
+            tag: widget.data["cid"] as String,
             child: CarouselSlider(
               options: CarouselOptions(
-                  height: size.width * 0.8,
+                  height: screenWidth,
                   initialPage: 0,
                   enableInfiniteScroll: false,
                   viewportFraction: 1.0,
@@ -112,11 +115,11 @@ class _DetailContentViewState extends State<DetailContentView>
                   }),
               items: imgList.map((i) {
                 return Container(
-                  width: size.width,
-                  height: size.width,
+                  width: screenWidth,
+                  height: screenWidth,
                   color: Colors.red,
                   child: Image.asset(
-                    widget.data["image"],
+                    widget.data["image"] as String,
                     fit: BoxFit.cover,
                   ),
                 );
@@ -201,7 +204,7 @@ class _DetailContentViewState extends State<DetailContentView>
         children: [
           SizedBox(height: 20),
           Text(
-            widget.data["title"],
+            widget.data["title"] as String,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -323,14 +326,14 @@ class _DetailContentViewState extends State<DetailContentView>
             onTap: () async {
               if (isMyFavoriteContent) {
                 await contentsRepository
-                    .deleteMyFavoriteContent(widget.data["cid"]);
+                    .deleteMyFavoriteContent(widget.data["cid"] as String);
               } else {
                 await contentsRepository.addMyFavoriteContent(widget.data);
               }
               setState(() {
                 isMyFavoriteContent = !isMyFavoriteContent;
               });
-              scaffoldKey.currentState.showSnackBar(SnackBar(
+              scaffoldKey.currentState!.showSnackBar(SnackBar(
                 duration: Duration(milliseconds: 1000),
                 content: Text(
                     isMyFavoriteContent ? "관심목록에 추가됐어요." : "관심목록에서 제거됐어요."),
@@ -356,7 +359,7 @@ class _DetailContentViewState extends State<DetailContentView>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                DataUtils.calcStringToWon(widget.data["price"]),
+                DataUtils.calcStringToWon(widget.data["price"] as String),
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,

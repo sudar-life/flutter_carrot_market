@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ManorTemperature extends StatelessWidget {
   double manorTemp;
   int level;
-  ManorTemperature({Key key, this.manorTemp}) {
+  ManorTemperature({Key? key, required this.manorTemp, this.level = 0}) {
     _calcTempLevel();
   }
 

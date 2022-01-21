@@ -5,7 +5,7 @@ import 'package:flutter_carrot_market/utils/data_utils.dart';
 import 'package:flutter_svg/svg.dart';
 
 class MyFavoriteContents extends StatefulWidget {
-  MyFavoriteContents({Key key}) : super(key: key);
+  MyFavoriteContents({Key? key}) : super(key: key);
 
   @override
   _MyFavoriteContentsState createState() => _MyFavoriteContentsState();
@@ -19,11 +19,11 @@ class _MyFavoriteContentsState extends State<MyFavoriteContents> {
     super.initState();
   }
 
-  Future<List<dynamic>> _loadMyFavoriteContentList() async {
+  Future<List<dynamic>?> _loadMyFavoriteContentList() async {
     return await contentsRepository.loadFavoriteContents();
   }
 
-  Widget _appBarWidget() {
+  PreferredSizeWidget _appBarWidget() {
     return AppBar(
       elevation: 0,
       title: Text(
@@ -39,7 +39,7 @@ class _MyFavoriteContentsState extends State<MyFavoriteContents> {
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
         if (datas != null && datas.length > 0) {
-          Map<String, dynamic> data = datas[index];
+          Map<String, String> data = datas[index];
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 7),
             child: GestureDetector(
@@ -56,9 +56,9 @@ class _MyFavoriteContentsState extends State<MyFavoriteContents> {
                       ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(5.0)),
                         child: Hero(
-                          tag: data["cid"],
+                          tag: data["cid"] as String,
                           child: Image.asset(
-                            data["image"],
+                            data["image"] as String,
                             width: 100,
                             height: 100,
                             fit: BoxFit.fill,
@@ -74,19 +74,20 @@ class _MyFavoriteContentsState extends State<MyFavoriteContents> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                data["title"],
+                                data["title"] as String,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 15),
                               ),
                               SizedBox(height: 5),
                               Text(
-                                data["location"],
+                                data["location"] as String,
                                 style: TextStyle(
                                     fontSize: 12, color: Color(0xff999999)),
                               ),
                               SizedBox(height: 5),
                               Text(
-                                DataUtils.calcStringToWon(data["price"]),
+                                DataUtils.calcStringToWon(
+                                    data["price"] as String),
                                 style: TextStyle(
                                     fontSize: 14,
                                     color: Colors.black,
@@ -107,7 +108,7 @@ class _MyFavoriteContentsState extends State<MyFavoriteContents> {
                                         ),
                                       ),
                                       SizedBox(width: 3),
-                                      Text(data["likes"]),
+                                      Text(data["likes"] as String),
                                     ],
                                   ),
                                 ),
@@ -129,9 +130,9 @@ class _MyFavoriteContentsState extends State<MyFavoriteContents> {
   }
 
   Widget _bodyWidget() {
-    return FutureBuilder(
+    return FutureBuilder<List<dynamic>?>(
       future: _loadMyFavoriteContentList(),
-      builder: (context, snapshot) {
+      builder: (BuildContext context, AsyncSnapshot<List<dynamic>?> snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return Center(child: CircularProgressIndicator());
         }
@@ -139,7 +140,7 @@ class _MyFavoriteContentsState extends State<MyFavoriteContents> {
           return Center(child: Text("데이터 오류"));
         }
         if (snapshot.hasData) {
-          return _makeDataList(snapshot.data);
+          return _makeDataList(snapshot.data ?? []);
         }
         return Center(child: Text("해당 지역에 데이터가 없습니다."));
       },

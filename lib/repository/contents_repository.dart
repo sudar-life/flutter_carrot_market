@@ -180,8 +180,8 @@ class ContentsRepository extends LocalStorageRepository {
 
   Future<bool> isMyFavoriteContents(String contentId) async {
     bool isMyFavoriteContents = false;
-    List json = await loadFavoriteContents();
-    if (json == null || !(json is List)) {
+    List? json = await loadFavoriteContents();
+    if (json == null) {
       return false;
     } else {
       for (dynamic data in json) {
@@ -194,8 +194,8 @@ class ContentsRepository extends LocalStorageRepository {
     return isMyFavoriteContents;
   }
 
-  Future<List> loadFavoriteContents() async {
-    String jsonString = await this.getStoredValue(MY_FAVORITE_KEY);
+  Future<List?> loadFavoriteContents() async {
+    String? jsonString = await this.getStoredValue(MY_FAVORITE_KEY);
     if (jsonString != null) {
       Map<String, dynamic> json = jsonDecode(jsonString);
       return json["favorites"];
@@ -205,8 +205,8 @@ class ContentsRepository extends LocalStorageRepository {
   }
 
   Future<void> addMyFavoriteContent(Map<String, String> content) async {
-    List loadLocalStorageDatas = await loadFavoriteContents();
-    if (loadLocalStorageDatas == null || !(loadLocalStorageDatas is List)) {
+    List? loadLocalStorageDatas = await loadFavoriteContents();
+    if (loadLocalStorageDatas == null) {
       loadLocalStorageDatas = [content];
     } else {
       loadLocalStorageDatas.add(content);
@@ -220,10 +220,10 @@ class ContentsRepository extends LocalStorageRepository {
   }
 
   Future<void> deleteMyFavoriteContent(String id) async {
-    List loadLocalStorageDatas = await loadFavoriteContents();
-    if (loadLocalStorageDatas != null && loadLocalStorageDatas is List) {
+    List? loadLocalStorageDatas = await loadFavoriteContents();
+    if (loadLocalStorageDatas != null) {
       loadLocalStorageDatas.removeWhere((element) => element["cid"] == id);
     }
-    updateFavoriteContent(loadLocalStorageDatas);
+    updateFavoriteContent(loadLocalStorageDatas ?? []);
   }
 }

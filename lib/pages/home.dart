@@ -6,7 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'detail.dart';
 
 class Home extends StatefulWidget {
-  Home({Key key}) : super(key: key);
+  Home({Key? key}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
@@ -14,13 +14,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final ContentsRepository contentsRepository = ContentsRepository();
-  String currentLocation;
+  late String currentLocation;
   final Map<String, String> locationTypeToString = {
     "ara": "아라동",
     "ora": "오라동",
     "donam": "도남동",
   };
-  bool isLoading;
+  late bool isLoading;
 
   @override
   void initState() {
@@ -32,7 +32,7 @@ class _HomeState extends State<Home> {
   /*
   * appBar Widget 구현 
   */
-  Widget _appbarWidget() {
+  PreferredSizeWidget _appbarWidget() {
     return AppBar(
       title: GestureDetector(
         onTap: () {
@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
               1),
           child: Row(
             children: [
-              Text(locationTypeToString[currentLocation]),
+              Text(locationTypeToString[currentLocation] as String),
               Icon(Icons.arrow_drop_down),
             ],
           ),
@@ -112,9 +112,9 @@ class _HomeState extends State<Home> {
                     ClipRRect(
                       borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       child: Hero(
-                        tag: data["cid"],
+                        tag: data["cid"] as String,
                         child: Image.asset(
-                          data["image"],
+                          data["image"] as String,
                           width: 100,
                           height: 100,
                           fit: BoxFit.fill,
@@ -130,19 +130,20 @@ class _HomeState extends State<Home> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              data["title"],
+                              data["title"] as String,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(fontSize: 15),
                             ),
                             SizedBox(height: 5),
                             Text(
-                              data["location"],
+                              data["location"] as String,
                               style: TextStyle(
                                   fontSize: 12, color: Color(0xff999999)),
                             ),
                             SizedBox(height: 5),
                             Text(
-                              DataUtils.calcStringToWon(data["price"]),
+                              DataUtils.calcStringToWon(
+                                  data["price"] as String),
                               style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.black,
@@ -163,7 +164,7 @@ class _HomeState extends State<Home> {
                                       ),
                                     ),
                                     SizedBox(width: 3),
-                                    Text(data["likes"]),
+                                    Text(data["likes"] as String),
                                   ],
                                 ),
                               ),
@@ -193,9 +194,10 @@ class _HomeState extends State<Home> {
    * body UI 
    */
   Widget _bodyWidget() {
-    return FutureBuilder(
+    return FutureBuilder<List<Map<String, String>>>(
       future: _loadContents(),
-      builder: (context, snapshot) {
+      builder: (BuildContext context,
+          AsyncSnapshot<List<Map<String, String>>> snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return Center(child: CircularProgressIndicator());
         }
@@ -203,7 +205,7 @@ class _HomeState extends State<Home> {
           return Center(child: Text("데이터 오류"));
         }
         if (snapshot.hasData) {
-          return _makeDataList(snapshot.data);
+          return _makeDataList(snapshot.data ?? []);
         }
         return Center(child: Text("해당 지역에 데이터가 없습니다."));
       },
